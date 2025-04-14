@@ -17,5 +17,5 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-document.addEventListener('click', () => {
+//document.addEventListener('click', () => {
 
