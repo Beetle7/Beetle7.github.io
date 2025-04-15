@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Analyzer</title>
+    <style>
+        body {
+            font-family: "SF Mono", monospace;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #000435;
+			background-color: #E4CBFF
+        }
+        #text-input::placeholder {
+   			 color: #CC99FF;
+        }
+        header {
+            background-color: #FFFFCC;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        nav {
+            margin-bottom: 20px;
+        }
+        
+        nav a {
+            padding: 10px;
+            text-decoration: none;
+            color: #000435;
+        }
+        
+        nav a:hover {
+			text-decoration: underline;
+        }
+        
+        #text-analyzer {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        #text-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #CC99FF;
+            border-radius: 4px;
+            font-family: inherit;
+            min-height: 200px;
+			color: #FFFFCC;
+			background-color: #000435;
+        }
+        
+        .word-count {
+            text-align: right;
+            color: #000435;
+            margin-bottom: 10px;
+        }
+        
+        #analyze-button {
+            padding: 10px 15px;
+            background-color: #000435;
+            color: #E4CBFF;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        #analyze-button:hover {
+			text-decoration: underline;
+        }
+        
+        #analysis-results {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .result-section {
+            flex: 1;
+            min-width: 250px;
+            border: 1px solid #CC99FF;
+            border-radius: 4px;
+            padding: 15px;
+            background-color: #FFFFCC;
+        }
+        
+        .result-section h3 {
+            margin-top: 0;
+            color: #000435;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        
+        .result-section ul {
+            max-height: 300px;
+            overflow-y: auto;
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .result-section li {
+            padding: 5px 0;
+            border-bottom: 1px dotted #CC99FF;
+        }
+        
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            padding: 10px;
+            background-color: #FFFFCC;
+			color: #000435;
+            font-size:"text/javascript";
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><b>Text Analyzer<b/></h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="#" class="active">Text Analyzer</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="text-analyzer">
+            <h2>Text Analysis Tool</h2>
+            <p>Enter text below and see what's in it!</p>
+            
+            <textarea id="text-input" placeholder="Enter text here..." rows="15"></textarea>
+            <div class="word-count" id="word-counter">0 words</div>
+            
+            <button id="analyze-button">Analyze Text</button>
+            
+            <div id="analysis-results">
+                <div id="basic-stats" class="result-section">
+                    <h3>Basic Statistics</h3>
+                    <ul id="basic-stats-list"></ul>
+                </div>
+                
+                <div id="pronouns" class="result-section">
+                    <h3>Pronouns Count</h3>
+                    <ul id="pronouns-list"></ul>
+                </div>
+                
+                <div id="prepositions" class="result-section">
+                    <h3>Prepositions Count</h3>
+                    <ul id="prepositions-list"></ul>
+                </div>
+                
+                <div id="articles" class="result-section">
+                    <h3>Indefinite Articles Count</h3>
+                    <ul id="articles-list"></ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Siddarth M. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Text Analyzer Functions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listener for analyze button
+            const analyzeButton = document.getElementById('analyze-button');
+            analyzeButton.addEventListener('click', analyzeText);
+            
+            // Add word counter functionality
+            const textInput = document.getElementById('text-input');
+            const wordCounter = document.getElementById('word-counter');
+            
+            textInput.addEventListener('input', function() {
+                const wordCount = textInput.value.trim() ? textInput.value.trim().split(/\s+/).length : 0;
+                wordCounter.textContent = `${wordCount} words`;
+            });
+            
+            // Initialize event tracking for this page
+            initEventTracking();
+        });
+
+        function analyzeText() {
+            const textInput = document.getElementById('text-input').value;
+            
+            if (textInput.trim() === '') {
+                alert('Please enter text to analyze.');
+                return;
+            }
+            
+            // Perform all analyses
+            analyzeBasicStats(textInput);
+            analyzePronouns(textInput);
+            analyzePrepositions(textInput);
+            analyzeArticles(textInput);
+        }
+
+        function analyzeBasicStats(text) {
+            // Count letters, words, spaces, newlines, and special symbols
+            const letters = (text.match(/[a-zA-Z]/g) || []).length;
+            const words = text.trim().split(/\s+/).length;
+            const spaces = (text.match(/\s/g) || []).length;
+            const newlines = (text.match(/\n/g) || []).length;
+            // Special symbols are any character that is not a letter, number, or whitespace
+            const specialSymbols = (text.match(/[^\w\s]/g) || []).length;
+            
+            // Display results
+            const statsList = document.getElementById('basic-stats-list');
+            statsList.innerHTML = `
+                <li>Letters: ${letters}</li>
+                <li>Words: ${words}</li>
+                <li>Spaces: ${spaces}</li>
+                <li>Newlines: ${newlines}</li>
+                <li>Special Symbols: ${specialSymbols}</li>
+            `;
+        }
+
+        function analyzePronouns(text) {
+            // List of common pronouns
+            const pronouns = [
+                "i", "me", "my", "mine", "myself",
+                "you", "your", "yours", "yourself", "yourselves",
+                "he", "him", "his", "himself",
+                "she", "her", "hers", "herself",
+                "it", "its", "itself",
+                "we", "us", "our", "ours", "ourselves",
+                "they", "them", "their", "theirs", "themselves",
+                "who", "whom", "whose", "which", "what",
+                "this", "that", "these", "those",
+                "anybody", "anyone", "anything", "each", "either", "everybody",
+                "everyone", "everything", "neither", "nobody", "nothing",
+                "somebody", "someone", "something", "both", "few", "many", "several"
+            ];
+            
+            // Convert text to lowercase and tokenize
+            const words = text.toLowerCase().match(/\b\w+\b/g) || [];
+            
+            // Count pronouns
+            const pronounCount = {};
+            pronouns.forEach(pronoun => {
+                pronounCount[pronoun] = 0;
+            });
+            
+            words.forEach(word => {
+                if (pronouns.includes(word)) {
+                    pronounCount[word]++;
+                }
+            });
+            
+            // Display results (only showing pronouns that appear in the text)
+            const pronounsList = document.getElementById('pronouns-list');
+            pronounsList.innerHTML = '';
+            
+            let hasPronouns = false;
+            // Sort pronouns by count (descending)
+            const sortedPronouns = Object.entries(pronounCount)
+                .filter(([_, count]) => count > 0)
+                .sort((a, b) => b[1] - a[1]);
+                
+            if (sortedPronouns.length > 0) {
+                sortedPronouns.forEach(([pronoun, count]) => {
+                    const li = document.createElement('li');
+                    li.textContent = `${pronoun}: ${count}`;
+                    pronounsList.appendChild(li);
+                });
+            } else {
+                pronounsList.innerHTML = '<li>No pronouns found</li>';
+            }
+        }
+
+        function analyzePrepositions(text) {
+            // List of common prepositions
+            const prepositions = [
+                "about", "above", "across", "after", "against", "along", "amid", "among", 
+                "around", "as", "at", "before", "behind", "below", "beneath", "beside", 
+                "between", "beyond", "by", "concerning", "despite", "down", "during", 
+                "except", "for", "from", "in", "inside", "into", "like", "near", "of", 
+                "off", "on", "onto", "out", "outside", "over", "past", "regarding", 
+                "round", "since", "through", "throughout", "to", "toward", "towards", 
+                "under", "underneath", "until", "unto", "up", "upon", "with", "within", "without"
+            ];
+            
+            // Convert text to lowercase and tokenize
+            const words = text.toLowerCase().match(/\b\w+\b/g) || [];
+            
+            // Count prepositions
+            const prepositionCount = {};
+            prepositions.forEach(preposition => {
+                prepositionCount[preposition] = 0;
+            });
+            
+            words.forEach(word => {
+                if (prepositions.includes(word)) {
+                    prepositionCount[word]++;
+                }
+            });
+            
+            // Display results (only showing prepositions that appear in the text)
+            const prepositionsList = document.getElementById('prepositions-list');
+            prepositionsList.innerHTML = '';
+            
+            // Sort prepositions by count (descending)
+            const sortedPrepositions = Object.entries(prepositionCount)
+                .filter(([_, count]) => count > 0)
+                .sort((a, b) => b[1] - a[1]);
+                
+            if (sortedPrepositions.length > 0) {
+                sortedPrepositions.forEach(([preposition, count]) => {
+                    const li = document.createElement('li');
+                    li.textContent = `${preposition}: ${count}`;
+                    prepositionsList.appendChild(li);
+                });
+            } else {
+                prepositionsList.innerHTML = '<li>No prepositions found</li>';
+            }
+        }
+
+        function analyzeArticles(text) {
+            // List of indefinite articles
+            const articles = ["a", "an"];
+            
+            // Convert text to lowercase and tokenize
+            const words = text.toLowerCase().match(/\b\w+\b/g) || [];
+            
+            // Count articles
+            const articleCount = {
+                "a": 0,
+                "an": 0
+            };
+            
+            words.forEach(word => {
+                if (articles.includes(word)) {
+                    articleCount[word]++;
+                }
+            });
+            
+            // Display results
+            const articlesList = document.getElementById('articles-list');
+            articlesList.innerHTML = `
+                <li>a: ${articleCount["a"]}</li>
+                <li>an: ${articleCount["an"]}</li>
+            `;
+        }
+
+        // Event tracking function for github.io personal page
+        function initEventTracking() {
+            // For click events on any element
+            document.addEventListener('click', function(event) {
+                logEvent(event, 'click');
+            });
+            
+            // For page view tracking using Intersection Observer
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1 // Element is considered viewed when 10% is visible
+            };
+            
+            const viewObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Create a synthetic event object with the target
+                    const viewEvent = { target: entry.target };
+                    logEvent(viewEvent, 'view');
+                }
+                });
+            }, observerOptions);
+            
+            // Track views for these important sections
+            const elementsToTrack = [
+                'text-input',
+                'analysis-results',
+                'basic-stats',
+                'pronouns',
+                'prepositions',
+                'articles'
+            ];
+            
+            // Start observing all important sections
+            elementsToTrack.forEach(elementId => {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    viewObserver.observe(element);
+                }
+            });
+            
+            // Also track views on textareas, buttons, and result lists
+            document.querySelectorAll('textarea, button, ul').forEach(element => {
+                viewObserver.observe(element);
+            });
+            
+            // Helper function to determine element type and context
+            function getElementType(element) {
+                if (element.id === 'text-input') {
+                    return 'text-input';
+                } else if (element.id === 'analyze-button') {
+                    return 'analyze-button';
+                } else if (element.id === 'basic-stats-list') {
+                    return 'basic-stats-results';
+                } else if (element.id === 'pronouns-list') {
+                    return 'pronouns-results';
+                } else if (element.id === 'prepositions-list') {
+                    return 'prepositions-results';
+                } else if (element.id === 'articles-list') {
+                    return 'articles-results';
+                } else if (element.tagName === 'LI') {
+                    const parent = element.parentElement;
+                    if (parent) {
+                        return `list-item (${parent.id})`;
+                    }
+                    return 'list-item';
+                } else {
+                    return element.tagName.toLowerCase();
+                }
+            }
+            
+            // Log the event with required format
+            function logEvent(event, eventType) {
+                const timestamp = new Date().toISOString();
+                const target = event.target;
+                const elementType = getElementType(target);
+                
+                // Get additional context about the element
+                let elementContext = '';
+                
+                if (target.tagName === 'LI') {
+                    elementContext = target.textContent.trim();
+                }
+                
+                // Add the context if available
+                const objectInfo = elementContext ? `${elementType} (${elementContext})` : elementType;
+                
+                // Log in the required format
+                console.log(`${timestamp}, ${eventType}, ${objectInfo}`);
+            }
+            
+            // Log initial page view
+            console.log(`${new Date().toISOString()}, view, text-analyzer-page-load`);
+        }
+    </script>
+</body>
+</html>
