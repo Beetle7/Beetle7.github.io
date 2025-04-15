@@ -321,32 +321,43 @@
             }
         }
 
-        function analyzeArticles(text) {
-            // List of indefinite articles
-            const articles = ["a", "an"];
-            
-            // Convert text to lowercase and tokenize
-            const words = text.toLowerCase().match(/\b\w+\b/g) || [];
-            
-            // Count articles
-            const articleCount = {
-                "a": 0,
-                "an": 0
-            };
-            
-            words.forEach(word => {
-                if (articles.includes(word)) {
-                    articleCount[word]++;
-                }
-            });
-            
-            // Display results
-            const articlesList = document.getElementById('articles-list');
-            articlesList.innerHTML = `
-                <li>a: ${articleCount["a"]}</li>
-                <li>an: ${articleCount["an"]}</li>
-            `;
+function analyzeArticles(text) {
+    // List of indefinite articles
+    const articles = ["a", "an"];
+    
+    // Convert text to lowercase and tokenize
+    const words = text.toLowerCase().match(/\b\w+\b/g) || [];
+    
+    // Count articles
+    const articleCount = {
+        "a": 0,
+        "an": 0
+    };
+    
+    words.forEach(word => {
+        if (articles.includes(word)) {
+            articleCount[word]++;
         }
+    });
+    
+    // Display results
+    const articlesList = document.getElementById('articles-list');
+    articlesList.innerHTML = '';
+    
+    // Check if any articles were found
+    const foundArticles = Object.entries(articleCount)
+        .filter(([_, count]) => count > 0);
+    
+    if (foundArticles.length > 0) {
+        foundArticles.forEach(([article, count]) => {
+            const li = document.createElement('li');
+            li.textContent = `${article}: ${count}`;
+            articlesList.appendChild(li);
+        });
+    } else {
+        articlesList.innerHTML = '<li>No indefinite articles found</li>';
+    }
+}
 
         // Event tracking function for github.io personal page
         function initEventTracking() {
